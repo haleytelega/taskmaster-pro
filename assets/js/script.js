@@ -141,6 +141,69 @@ $(".list-group").on("blur", "input[type='text']", function() {
   $(this).replaceWith(taskSpan);
 });
 
+$(".card .list-group").sortable({
+  connectWith: $(".card .list-group"), //.conectedWith linkes these sortable lists with any other lists
+  scroll: false,
+  tolerance: "pointer",
+  helper: "clone", //creates a copy of the dragged element and move the copy instead of the original
+  activate: function (event) { //trigger once for all connected lists as soon as dragging starts and stops.
+    console.log("activate", this);
+  },
+  deactivate: function(event) { //trigger once for all connected lists as soon as dragging starts and stops.
+    console.log("deactivate", this);
+  },
+  over: function(event) { //events trigger when a dragged item enters
+    console.log("over", event.target);
+  },
+  out: function(event) { //events trigger when a dragged item leaves a connected list.
+    console.log("out", event.target);
+  },
+  update: function(event) { //event triggers when the contents of a list have changed 
+    // array to store the task data in
+  var tempArr = [];
+  $(this).children().each(function() { //.each method will run a callback function for every item/element in the array, another form of looping
+      var text = $(this)
+      .find("p")
+      .text()
+      .trim();
+
+      var date = $(this)
+      .find("span")
+      .text()
+      .trim();
+
+        //add task data to the temp array as an object
+      tempArr.push({
+        text: text,
+        date: date
+        });
+    //add task data to the temp array as an object
+    // console.log($(this)); //returns an array of the list elements children (li)
+  });
+  var arrName = $(this)
+  .attr("id")
+  .replace("list-", "");
+
+  tasks[arrName] = tempArr;
+  saveTasks();
+  }
+});
+
+$('#trash').droppable ({
+  accept:".card .list-group-item",
+  tolerance: "touch",
+  drop: function(event, ui) { //drop method means they are trying to delete the task
+    ui.draggable.remove(); //will remove element entirly
+    console.log("drop");
+  },
+  over: function(event, ui) {
+    console.log("over");
+  },
+  out: function(event, ui) {
+    console.log("out");
+  }
+});
+
 // modal was triggered
 $("#task-form-modal").on("show.bs.modal", function() {
   // clear values
@@ -186,5 +249,3 @@ $("#remove-tasks").on("click", function() {
 
 // load tasks for the first time
 loadTasks();
-
-
