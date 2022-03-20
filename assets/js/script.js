@@ -158,15 +158,21 @@ $(".card .list-group").sortable({
   tolerance: "pointer",
   helper: "clone", //creates a copy of the dragged element and move the copy instead of the original
   activate: function (event) { //trigger once for all connected lists as soon as dragging starts and stops.
+    $(this).addClass("dropover");
+    $(".bottom-trash").addClass("bottom-trash-drag");
     console.log("activate", this);
   },
   deactivate: function(event) { //trigger once for all connected lists as soon as dragging starts and stops.
+    $(this).removeClass("dropover");
+    $(".bottom-trash").remove("bottom-trash-drag");
     console.log("deactivate", this);
   },
   over: function(event) { //events trigger when a dragged item enters
+    $(event.target).addClass("dropover-active");
     console.log("over", event.target);
   },
   out: function(event) { //events trigger when a dragged item leaves a connected list.
+    $(event.target).removeClass("dropover-active");
     console.log("out", event.target);
   },
   update: function(event) { //event triggers when the contents of a list have changed 
@@ -205,12 +211,15 @@ $('#trash').droppable ({
   tolerance: "touch",
   drop: function(event, ui) { //drop method means they are trying to delete the task
     ui.draggable.remove(); //will remove element entirly
+    $(".bottom-trash").removeClass("bottom-trash-active");
     console.log("drop");
   },
   over: function(event, ui) {
+    $(".bottom-trash").addClass("bottom-trash-active");
     console.log("over");
   },
   out: function(event, ui) {
+    $(".bottom-trash").removeClass("bottom-trash-active");
     console.log("out");
   }
 });
@@ -234,6 +243,7 @@ var auditTask = function (taskEl){
     else if (Math.abs(moment().diff(time, "days")) <= 2){ //abs is the absolute value
       $(taskEl).addClass("list-group-item-warning");
     }
+    console.log("taskEl");
 };
 
 
@@ -250,7 +260,7 @@ $("#task-form-modal").on("shown.bs.modal", function() {
 });
 
 // save button in modal was clicked
-$("#task-form-modal .btn-primary").click(function() {
+$("#task-form-modal .btn-save").click(function() {
   // get form values
   var taskText = $("#modalTaskDescription").val();
   var taskDate = $("#modalDueDate").val();
@@ -274,6 +284,12 @@ $("#task-form-modal .btn-primary").click(function() {
 $("#modalDueDate").datepicker({
     minDate: 1 //doesn't let you select a date that has passed, set it to 1 day before the current date
 });
+
+setInterval(function() {
+  $(".card .list-group-item").each(function(index, el) { //loop over each task with class of list and execute the auditTask function to check each due date
+auditTask(el); //auditTask then passes the element to its routines using the el argument
+  });
+}, (1000 * 60) * 30);
 
 // remove all tasks
 $("#remove-tasks").on("click", function() {
